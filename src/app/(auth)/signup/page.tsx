@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import SignupForm from "./SignupForm";
 
-export const metadata: Metadata = { title: "가입하기" };
+export const metadata: Metadata = {
+  title: "가입하기",
+  description: "운영진에게 받은 7기 인증 코드로 기본학교 7기 커뮤니티에 합류하세요.",
+};
 
 export default async function SignupPage() {
   if (await getSession()) redirect("/skills");

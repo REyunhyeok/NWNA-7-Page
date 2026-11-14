@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "소개" };
+export const metadata: Metadata = {
+  title: "소개",
+  description: "기본학교 7기의 취지와 비전, 그리고 7기가 함께 걸어갈 여정을 소개합니다.",
+};
 
 // 내용은 7기 상황에 맞게 자유롭게 수정하세요.
 const values = [
