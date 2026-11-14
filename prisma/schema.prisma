@@ -21,6 +21,9 @@ model User {
   likes      SkillLike[]
   files      FileItem[]
   comments   Comment[]
+  sites        Site[]
+  siteLikes    SiteLike[]
+  siteComments SiteComment[]
 }
 
 model Skill {
@@ -79,4 +82,45 @@ model FileItem {
   uploader   User   @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
 
   @@index([folder])
+}
+
+// ── 동지 홈페이지 소개 게시판 ──
+model Site {
+  id          String   @id @default(cuid())
+  title       String   // 사이트 이름
+  url         String   // 사이트 주소 (http/https)
+  summary     String   // 한 줄 소개
+  description String   // 만든 이유, 주요 기능, 회고 등
+  techStack   String   @default("") // 쉼표로 구분 (Next.js, Tailwind …)
+  repoUrl     String?  // GitHub 저장소 (선택)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId String
+  author   User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes    SiteLike[]
+  comments SiteComment[]
+
+  @@index([createdAt])
+}
+
+model SiteLike {
+  userId String
+  siteId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site   Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@id([userId, siteId])
+}
+
+model SiteComment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  siteId   String
+  site     Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }

@@ -16,7 +16,7 @@ export default async function MembersPage() {
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
     select: {
       id: true, name: true, email: true, role: true, bio: true, github: true, createdAt: true,
-      _count: { select: { skills: true, files: true } },
+      _count: { select: { skills: true, sites: true, files: true } },
     },
   });
 
@@ -46,7 +46,7 @@ export default async function MembersPage() {
             </div>
             <p className="mt-3 flex-1 text-sm text-zinc-600">{m.bio || "아직 소개가 없습니다."}</p>
             <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3 font-mono text-xs text-zinc-500">
-              <span>스킬 {m._count.skills} · 자료 {m._count.files}</span>
+              <span>스킬 {m._count.skills} · 홈페이지 {m._count.sites} · 자료 {m._count.files}</span>
               <span>{formatDate(m.createdAt)} 합류</span>
             </div>
 

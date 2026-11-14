@@ -11,6 +11,15 @@ export type SkillCategory = keyof typeof SKILL_CATEGORIES;
 
 export const DRIVE_FOLDERS = ["일반", "강의자료", "과제", "프로젝트", "참고문서"] as const;
 
+/** http/https 주소만 허용 (javascript: 같은 스킴 차단) */
+const httpUrl = (msg = "http(s)로 시작하는 주소를 입력하세요.") =>
+  z
+    .string()
+    .trim()
+    .max(500)
+    .url(msg)
+    .refine((v) => /^https?:\/\//i.test(v), msg);
+
 export const loginSchema = z.object({
   email: z.string().email("올바른 이메일을 입력하세요."),
   password: z.string().min(1, "비밀번호를 입력하세요."),
@@ -51,7 +60,16 @@ export const skillSchema = z.object({
   category: z.enum(Object.keys(SKILL_CATEGORIES) as [SkillCategory, ...SkillCategory[]]),
   tags: z.string().trim().max(100).default(""),
   content: z.string().trim().min(10, "본문은 10자 이상").max(20000),
-  sourceUrl: z.string().trim().url("올바른 URL을 입력하세요.").optional().or(z.literal("")),
+  sourceUrl: httpUrl().optional().or(z.literal("")),
+});
+
+export const siteSchema = z.object({
+  title: z.string().trim().min(2, "이름은 2자 이상").max(60),
+  url: httpUrl(),
+  summary: z.string().trim().min(5, "한 줄 소개는 5자 이상").max(120),
+  description: z.string().trim().min(10, "소개는 10자 이상").max(5000),
+  techStack: z.string().trim().max(120).default(""),
+  repoUrl: httpUrl().optional().or(z.literal("")),
 });
 
 export const commentSchema = z.object({

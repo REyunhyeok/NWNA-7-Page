@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/about", label: "소개", auth: false },
   { href: "/skills", label: "AI 스킬", auth: true },
+  { href: "/sites", label: "홈페이지", auth: true },
   { href: "/drive", label: "드라이브", auth: true },
   { href: "/members", label: "동지들", auth: true },
 ];

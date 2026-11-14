@@ -18,6 +18,12 @@ const features = [
     href: "/drive",
   },
   {
+    icon: "🌐",
+    title: "동지 홈페이지",
+    desc: "각자 직접 만든 홈페이지를 소개하고, 방문해 보고, 응원과 피드백을 주고받습니다.",
+    href: "/sites",
+  },
+  {
     icon: "🤝",
     title: "동지 네트워크",
     desc: "누가 무엇을 잘하는지 프로필로 확인하고, 프로젝트 협업할 동지를 찾습니다.",
@@ -27,9 +33,10 @@ const features = [
 
 export default async function HomePage() {
   const session = await getSession();
-  const [members, skills, files] = await Promise.all([
+  const [members, skills, sites, files] = await Promise.all([
     prisma.user.count(),
     prisma.skill.count(),
+    prisma.site.count(),
     prisma.fileItem.count(),
   ]);
 
@@ -66,10 +73,11 @@ export default async function HomePage() {
             <Link href="/about" className="btn-ghost px-5 py-2.5">7기 소개</Link>
           </div>
 
-          <dl className="mt-14 grid max-w-lg grid-cols-3 gap-6 border-t border-zinc-200 pt-6">
+          <dl className="mt-14 grid max-w-2xl grid-cols-2 gap-6 border-t border-zinc-200 pt-6 sm:grid-cols-4">
             {[
               { k: "동지", v: members },
               { k: "AI 스킬", v: skills },
+              { k: "홈페이지", v: sites },
               { k: "공유 자료", v: files },
             ].map((s) => (
               <div key={s.k}>
@@ -84,8 +92,8 @@ export default async function HomePage() {
       {/* Features */}
       <section className="container-page py-16 sm:py-20">
         <p className="font-mono text-xs uppercase tracking-widest text-brand-600">what&apos;s inside</p>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">7기를 위한 세 가지 허브</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">7기를 위한 네 가지 허브</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <Link key={f.title} href={f.href} className="card group transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md">
               <div className="text-2xl">{f.icon}</div>
