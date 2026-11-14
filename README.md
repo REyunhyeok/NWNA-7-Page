@@ -48,7 +48,8 @@
 - [x] 코드를 `main`에 병합
 - [x] `vercel.json` 추가 — 프레임워크를 Next.js로 고정
 - [ ] **Settings → Build and Deployment → Framework Preset을 `Next.js`로 변경** (현재 `Other`라서 `public` 폴더 에러)
-- [ ] **Deployments → Create Deployment → `main`** 으로 최신 커밋 배포
+- [x] 커밋 작성자를 저장소 주인으로 변경 → `main` push 시 자동 배포
+- [ ] 자동 배포 결과 확인 (Deployments 탭)
 - [ ] Storage: Neon(Postgres) 연결 → `DATABASE_URL`
 - [ ] Storage: Blob 연결 → `BLOB_READ_WRITE_TOKEN`
 - [ ] 환경 변수: `NEXTAUTH_SECRET`, `COHORT_INVITE_CODE`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`
@@ -60,7 +61,7 @@
 | 이슈 | 영향 | 대응 |
 | --- | --- | --- |
 | 빌드 실패: `No Output Directory named "public"` | 배포 안 됨 | 프로젝트 생성 시 Framework가 `Other`로 감지됨. `vercel.json` 추가 완료, 대시보드에서 Preset 변경 후 재배포 필요 |
-| Claude가 만든 커밋은 Vercel 자동 배포가 안 됨 | push해도 배포가 자동으로 안 뜸 | 무료 플랜은 계정 주인이 아닌 작성자의 커밋을 자동 배포하지 않음 → 대시보드에서 **Create Deployment**로 수동 배포 |
+| ~~Claude가 만든 커밋은 Vercel 자동 배포가 안 됨~~ | ✅ 해결 | 커밋 작성자를 저장소 주인(REyunhyeok)으로 변경 → 이제 `main`에 push하면 자동 배포 |
 | Blob 업로드 경로 미검증 | 운영 드라이브 업로드 실패 가능성 | 첫 배포 후 작은 파일로 업로드·다운로드 테스트 |
 | 스킬·홈페이지 상세를 열 때마다 조회수 증가 | 새로고침해도 조회수가 오름 | 추후 사용자별 1회 집계로 개선 |
 | 모바일에서 상단 메뉴가 5개라 화면을 넘침 | 오른쪽 메뉴(동지들)는 옆으로 밀어야 보임 | 추후 모바일용 햄버거 메뉴로 개선 |
@@ -79,6 +80,8 @@
 
 | 날짜 | 커밋 | 내용 |
 | --- | --- | --- |
+| 2026-11-14 | (이 커밋) | 커밋 작성자를 저장소 주인으로 바꿔 Vercel 자동 배포 활성화, 배포 현황 갱신 |
+| 2026-11-14 | `c494317` | README 개발 현황 갱신 (홈페이지 게시판) |
 | 2026-11-14 | `7585219` | **동지 홈페이지 소개 게시판(`/sites`) 추가** · 링크를 http/https로 제한 |
 | 2026-11-14 | `246be64` | README에 개발 현황 섹션 추가, 갱신 규칙(`CLAUDE.md`) |
 | 2026-11-14 | `d5eb38c` | `vercel.json` 추가 — Vercel에서 Next.js로 인식되도록 고정 |
