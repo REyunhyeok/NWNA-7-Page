@@ -14,7 +14,8 @@
 
 - **Next.js 14 (App Router) + TypeScript** — 페이지·API·서버 액션을 한 프로젝트에서
 - **Tailwind CSS** — 디자인 토큰은 `tailwind.config.ts`, 공통 클래스(`.btn-*`, `.card`, `.input`)는 `src/app/globals.css`
-- **Prisma + SQLite** — 개발은 파일 DB, 운영은 PostgreSQL로 교체 가능
+- **Prisma + PostgreSQL** — 로컬은 Docker/로컬 Postgres, 배포는 Neon
+- **파일 저장소** — Vercel Blob (`BLOB_READ_WRITE_TOKEN` 있을 때) / 로컬 디스크 (없을 때)
 - **NextAuth (Credentials, JWT 세션)** + bcrypt 비밀번호 해시
 - **zod** — 모든 폼 입력 서버측 검증
 
@@ -29,7 +30,7 @@ src/
   lib/
     auth.ts              # NextAuth 설정, requireUser()
     prisma.ts            # Prisma 싱글턴
-    storage.ts           # 파일 저장소 (로컬 디스크 → S3로 교체 시 이 파일만 수정)
+    storage.ts           # 파일 저장소 (Vercel Blob / 로컬 디스크 자동 선택)
     validators.ts        # zod 스키마, 카테고리/폴더 상수
     utils.ts
   app/
@@ -40,16 +41,17 @@ src/
     drive/               # 드라이브
     members/, profile/   # 회원 관리
     api/auth/[...nextauth]/  # NextAuth 엔드포인트
-    api/files/           # POST 업로드, [id] GET 다운로드 / DELETE 삭제
+    api/files/           # POST 등록, [id] GET 다운로드 / DELETE 삭제, upload-token(Blob 직접 업로드 토큰)
   components/            # Navbar, UserMenu, SubmitButton, skills/*, drive/* …
 ```
 
 ## 로컬 실행
 
 ```bash
+docker run -d --name gibon7-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=gibon7 -p 5432:5432 postgres:16
 npm install
-cp .env.example .env      # 값 수정: NEXTAUTH_SECRET, COHORT_INVITE_CODE, ADMIN_* 
-npm run setup             # DB 생성 + 관리자 계정 시드
+cp .env.example .env      # 값 수정: NEXTAUTH_SECRET, COHORT_INVITE_CODE, ADMIN_*
+npm run setup             # DB 테이블 생성 + 관리자 계정 시드
 npm run dev               # http://localhost:3000
 ```
 
@@ -64,22 +66,15 @@ npm run dev               # http://localhost:3000
 - 스킬·댓글·파일은 **작성자 본인 또는 ADMIN**만 수정/삭제.
 - 업로드 파일은 랜덤 UUID 이름으로 저장되고, 항상 `attachment`로만 내려가 브라우저에서 실행되지 않습니다.
 
-## 배포 가이드
+## 배포 가이드 (Vercel)
 
-**A. 단일 서버 (가장 간단, SQLite·로컬 파일 그대로)** — Railway / Fly.io / VPS + PM2
+1. Vercel 프로젝트 → **Storage** 탭에서 **Neon(Postgres)** 와 **Blob** 스토어를 만들어 프로젝트에 연결
+   → `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN` 이 자동으로 환경 변수에 들어갑니다.
+2. **Settings → Environment Variables** 에 `NEXTAUTH_SECRET`, `COHORT_INVITE_CODE`,
+   `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` 추가 (`NEXTAUTH_URL`은 Vercel이 자동 감지)
+3. 배포하면 `vercel-build` 스크립트가 **스키마 반영 → 관리자 시드 → 빌드**를 자동으로 수행합니다.
 
-```bash
-npm ci
-npm run build
-npm run db:push && npm run db:seed
-npm start
-```
-`DATABASE_URL`과 `UPLOAD_DIR`은 **영구 볼륨** 경로를 가리켜야 재배포 시 데이터가 남습니다.
-
-**B. Vercel** — 서버리스는 로컬 디스크가 휘발되므로
-1. `prisma/schema.prisma`의 `provider`를 `postgresql`로 바꾸고 Neon/Supabase 등의 `DATABASE_URL` 설정
-2. `src/lib/storage.ts`를 S3/R2/Vercel Blob 업로드로 교체
-3. 환경 변수(`NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `COHORT_INVITE_CODE` …) 등록 후 배포
+업로드는 브라우저가 Blob에 직접 올리므로 Vercel 함수의 4.5MB 요청 제한과 무관하게 `MAX_UPLOAD_MB`까지 올릴 수 있습니다.
 
 ## 다음 단계 아이디어
 

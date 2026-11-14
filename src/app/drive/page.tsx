@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { DRIVE_FOLDERS } from "@/lib/validators";
+import { storageMode } from "@/lib/storage";
 import { cn, formatBytes, formatDate } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader";
 import UploadPanel from "@/components/drive/UploadPanel";
@@ -19,7 +20,7 @@ export default async function DrivePage({ searchParams }: { searchParams: { fold
 
   const where: Prisma.FileItemWhereInput = {
     ...(folder ? { folder } : {}),
-    ...(q ? { OR: [{ name: { contains: q } }, { description: { contains: q } }] } : {}),
+    ...(q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] } : {}),
   };
 
   const [files, counts, total] = await Promise.all([
@@ -58,7 +59,7 @@ export default async function DrivePage({ searchParams }: { searchParams: { fold
         </aside>
 
         <div className="min-w-0 space-y-4">
-          <UploadPanel defaultFolder={folder ?? "일반"} />
+          <UploadPanel defaultFolder={folder ?? "일반"} mode={storageMode} />
 
           <form action="/drive" className="flex gap-2">
             {folder && <input type="hidden" name="folder" value={folder} />}

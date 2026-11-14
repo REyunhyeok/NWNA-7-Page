@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -67,7 +67,7 @@ model Comment {
 model FileItem {
   id          String   @id @default(cuid())
   name        String   // 원본 파일명
-  storedName  String   @unique // 디스크에 저장된 이름
+  storedName  String   @unique // 로컬: 디스크 파일명 / Vercel: Blob URL
   mimeType    String
   size        Int
   folder      String   @default("일반") // 폴더(카테고리)

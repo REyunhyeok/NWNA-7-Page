@@ -23,10 +23,10 @@ export default async function SkillsPage({ searchParams }: { searchParams: Searc
     ...(q
       ? {
           OR: [
-            { title: { contains: q } },
-            { summary: { contains: q } },
-            { tags: { contains: q } },
-            { content: { contains: q } },
+            { title: { contains: q, mode: "insensitive" } },
+            { summary: { contains: q, mode: "insensitive" } },
+            { tags: { contains: q, mode: "insensitive" } },
+            { content: { contains: q, mode: "insensitive" } },
           ],
         }
       : {}),

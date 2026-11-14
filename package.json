@@ -10,10 +10,13 @@
     "db:push": "prisma db push",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "db:studio": "prisma studio",
-    "setup": "prisma db push && npm run db:seed"
+    "setup": "prisma db push && npm run db:seed",
+    "vercel-build": "prisma generate && prisma db push --skip-generate && tsx prisma/seed.ts && next build",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
+    "@vercel/blob": "^0.27.1",
     "bcryptjs": "2.4.3",
     "next": "14.2.15",
     "next-auth": "4.24.10",

@@ -2,10 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { upload as blobUpload } from "@vercel/blob/client";
 import { DRIVE_FOLDERS } from "@/lib/validators";
 import { cn, formatBytes } from "@/lib/utils";
 
-export default function UploadPanel({ defaultFolder }: { defaultFolder: string }) {
+export default function UploadPanel({
+  defaultFolder,
+  mode,
+}: {
+  defaultFolder: string;
+  mode: "blob" | "local";
+}) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -13,13 +20,54 @@ export default function UploadPanel({ defaultFolder }: { defaultFolder: string }
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  function done(formEl: HTMLFormElement) {
+    setProgress(null);
+    setFile(null);
+    if (inputRef.current) inputRef.current.value = "";
+    formEl.reset();
+    router.refresh();
+  }
+
+  // Vercel 배포: 브라우저 → Vercel Blob 직접 업로드 후, 서버에 메타데이터 등록
+  async function uploadToBlob(formEl: HTMLFormElement, file: File, form: FormData) {
+    try {
+      const blob = await blobUpload(`drive/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/files/upload-token",
+        multipart: file.size > 10 * 1024 * 1024,
+        onUploadProgress: (p) => setProgress(Math.round(p.percentage)),
+      });
+      const res = await fetch("/api/files", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: blob.url,
+          name: file.name,
+          folder: form.get("folder"),
+          description: form.get("description"),
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "등록 실패");
+      done(formEl);
+    } catch (err) {
+      setProgress(null);
+      setError((err as Error).message || "업로드에 실패했습니다.");
+    }
+  }
+
   function upload(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!file) return;
-    const form = new FormData(e.currentTarget);
-    form.set("file", file);
+    const formEl = e.currentTarget;
+    const form = new FormData(formEl);
     setError(null);
     setProgress(0);
+
+    if (mode === "blob") {
+      void uploadToBlob(formEl, file, form);
+      return;
+    }
+    form.set("file", file);
 
     // fetch는 업로드 진행률을 주지 않으므로 XHR 사용
     const xhr = new XMLHttpRequest();
@@ -28,10 +76,7 @@ export default function UploadPanel({ defaultFolder }: { defaultFolder: string }
     xhr.onload = () => {
       setProgress(null);
       if (xhr.status >= 200 && xhr.status < 300) {
-        setFile(null);
-        if (inputRef.current) inputRef.current.value = "";
-        (e.target as HTMLFormElement).reset();
-        router.refresh();
+        done(formEl);
       } else {
         try {
           setError(JSON.parse(xhr.responseText).error);
