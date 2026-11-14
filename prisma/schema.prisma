@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("MEMBER") // MEMBER | ADMIN
+  bio          String?
+  github       String?
+  createdAt    DateTime @default(now())
+
+  skills     Skill[]
+  likes      SkillLike[]
+  files      FileItem[]
+  comments   Comment[]
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  content     String   // 프롬프트 본문 / 사용법 (Markdown 텍스트)
+  category    String   // PROMPT | CLAUDE_SKILL | AGENT | WORKFLOW | TOOL
+  tags        String   @default("") // 쉼표로 구분
+  sourceUrl   String?
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId String
+  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes    SkillLike[]
+  comments Comment[]
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+model SkillLike {
+  userId  String
+  skillId String
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([userId, skillId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  skillId  String
+  skill    Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model FileItem {
+  id          String   @id @default(cuid())
+  name        String   // 원본 파일명
+  storedName  String   @unique // 디스크에 저장된 이름
+  mimeType    String
+  size        Int
+  folder      String   @default("일반") // 폴더(카테고리)
+  description String?
+  downloads   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  uploaderId String
+  uploader   User   @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([folder])
+}
